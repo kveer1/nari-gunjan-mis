@@ -1,3 +1,4 @@
+from django.http import HttpResponse
 
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
@@ -7,30 +8,35 @@ from django.utils import timezone
 from django.db.models import Count, Q
 
 @login_required
+@login_required
 def dashboard(request):
-    user = request.user
-    profile = user.userprofile
-    
-    if profile.role == 'teacher':
-        return teacher_dashboard(request)
-    elif profile.role == 'cm':
-        return cm_dashboard(request)
-    elif profile.role == 'coordinator':
-        return coordinator_dashboard(request)
-    elif profile.role == 'manager':
-        return manager_dashboard(request)
-    elif profile.role == 'admin':
-        return admin_dashboard(request)
+    # Get user role from profile
+    user_role = None
+    if hasattr(request.user, 'userprofile'):
+        user_role = request.user.userprofile.role
     else:
-        return render(request, 'dashboard.html', {'user': user})
-    # Add attendance statistics
+        # Default to admin for users without profile (like superuser)
+        user_role = 'admin'
+    
+    # Route to appropriate dashboard based on role
+    if user_role == 'teacher':
+        return teacher_dashboard(request)
+    elif user_role == 'cm':
+        return cm_dashboard(request)
+    elif user_role == 'coordinator':
+        return coordinator_dashboard(request)
+    elif user_role == 'manager':
+        return manager_dashboard(request)
+    else:  # admin and others
+        return admin_dashboard(request)
+
+def admin_dashboard(request):
+    """Dashboard for admin users"""
     # Get basic statistics
     total_students = Student.objects.count()
     active_centers = LearningCenter.objects.count()
     
     # Get gender distribution
-    # Get gender distribution
-    from django.db.models import Count, Q
     gender_distribution = Student.objects.aggregate(
         boys=Count('id', filter=Q(gender='MALE')),
         girls=Count('id', filter=Q(gender='FEMALE'))
@@ -49,12 +55,22 @@ def dashboard(request):
         'today_attendance': today_attendance,
         'total_today_attendance': total_today_attendance,
         'attendance_date': today,
-        'user_has_profile': hasattr(request.user, 'userprofile'),
-        'user_role': request.user.userprofile.role if hasattr(request.user, 'userprofile') else 'admin',
     }
     
-    
     return render(request, 'dashboard.html', context)
+
+# Add other dashboard functions (you can implement these later)
+def teacher_dashboard(request):
+    return admin_dashboard(request)  # For now, use same as admin
+
+def cm_dashboard(request):
+    return admin_dashboard(request)  # For now, use same as admin
+
+def coordinator_dashboard(request):
+    return admin_dashboard(request)  # For now, use same as admin
+
+def manager_dashboard(request):
+    return admin_dashboard(request)  # For now, use same as admin
 
 def teacher_dashboard(request):
     # Get teacher's assigned centers
