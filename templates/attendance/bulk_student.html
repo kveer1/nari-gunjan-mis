@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Bulk Student Attendance</h4>
+                </div>
+                <div class="card-body">
+                    {% if centers %}
+                    <div class="mb-3">
+                        <h5>Select Learning Center:</h5>
+                        <div class="list-group">
+                            {% for center in centers %}
+                                <a href="{% url 'bulk_student_attendance_center' center.id %}" 
+                                   class="list-group-item list-group-item-action {% if selected_center.id == center.id %}active{% endif %}">
+                                    {{ center.name }} - {{ center.village }}
+                                </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if selected_center %}
+                    <div class="alert alert-info">
+                        Marking attendance for: <strong>{{ selected_center.name }}</strong>
+                    </div>
+                    {% endif %}
+
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                        <button type="submit" class="btn btn-primary">Mark Attendance for Selected Students</button>
+                        <a href="{% url 'attendance_dashboard' %}" class="btn btn-secondary">Cancel</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <h2>Attendance Dashboard</h2>
+            <p class="text-muted">Today: {{ today }}</p>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Student Attendance</h5>
+                    <h3 class="text-primary">{{ student_attendance_count }}</h3>
+                    <a href="{% url 'mark_student_attendance' %}" class="btn btn-primary btn-sm">Mark Attendance</a>
+                    <a href="{% url 'bulk_student_attendance' %}" class="btn btn-outline-primary btn-sm">Bulk Marking</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Teacher Attendance</h5>
+                    <h3 class="text-success">{{ teacher_attendance_count }}</h3>
+                    <a href="{% url 'mark_teacher_attendance' %}" class="btn btn-success btn-sm">Mark Attendance</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">CM Attendance</h5>
+                    <h3 class="text-info">{{ cm_attendance_count }}</h3>
+                    <a href="{% url 'mark_cm_attendance' %}" class="btn btn-info btn-sm">Mark Attendance</a>
+                </div>
+            </div>
+        </div>
+        <!-- Add monthly stats -->
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Monthly Total</h5>
+                    <h3 class="text-warning">{{ monthly_count }}</h3>
+                    <small class="text-muted">This month</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        <a href="{% url 'mark_student_attendance' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-user-graduate"></i> Mark Individual Student Attendance
+                        </a>
+                        <a href="{% url 'bulk_student_attendance' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-users"></i> Mark Bulk Student Attendance
+                        </a>
+                        <a href="{% url 'mark_teacher_attendance' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-chalkboard-teacher"></i> Mark Teacher Attendance
+                        </a>
+                        <a href="{% url 'mark_cm_attendance' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-hands-helping"></i> Mark Community Mobilizer Attendance
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

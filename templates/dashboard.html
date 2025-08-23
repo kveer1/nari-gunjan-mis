@@ -1,66 +1,120 @@
-{% extends "base.html" %}
 
-{% block title %}Dashboard - Nari Gunjan MIS{% endblock %}
+{% extends 'base.html' %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-12">
-        <h2>Dashboard</h2>
-        <p class="lead">Welcome to Nari Gunjan Management Information System</p>
-    </div>
-</div>
+<div class="container mt-4">
+    <h2>Dashboard</h2>
+    <p class="text-muted">Welcome to Nari Gunjan Management Information System</p>
 
-<div class="row mt-4">
-    <div class="col-md-4">
-        <div class="card text-white bg-primary mb-3">
-            <div class="card-body">
-                <h5 class="card-title">Learning Centers</h5>
-                <p class="card-text display-4">{{ total_centers }}</p>
-                <p class="card-text">Active centers</p>
+    <div class="row mb-4">
+        <!-- Learning Centers -->
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Learning Centers</h5>
+                    <h3 class="text-success">{{ active_centers }}</h3>
+                    <p class="text-muted">Active centers</p>
+                </div>
             </div>
         </div>
-    </div>
-    
-    <div class="col-md-4">
-        <div class="card text-white bg-success mb-3">
-            <div class="card-body">
-                <h5 class="card-title">Total Students</h5>
-                <p class="card-text display-4">{{ total_students }}</p>
-                <p class="card-text">Registered students</p>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-4">
-        <div class="card text-white bg-info mb-3">
-            <div class="card-body">
-                <h5 class="card-title">Gender Distribution</h5>
-                <p class="card-text">Boys: {{ male_students }}</p>
-                <p class="card-text">Girls: {{ female_students }}</p>
-            </div>
-        </div>
-    </div>
-</div>
 
-<div class="row mt-4">
-    <div class="col-md-12">
-        <div class="card">
-            <div class="card-header">
-                <h5>Quick Actions</h5>
+        <!-- Today's Attendance -->
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Today's Attendance</h5>
+                    <h3 class="text-primary">{{ today_attendance }}</h3>
+                    <p class="text-muted">As of {{ attendance_date }}</p>
+                    {% if total_today_attendance > 0 %}
+                    <div class="progress mt-2" style="height: 5px;">
+                        <div class="progress-bar bg-success" 
+                             style="width: {% widthratio today_attendance total_today_attendance 100 %}%">
+                        </div>
+                    </div>
+                    <small>{{ today_attendance }}/{{ total_today_attendance }} present</small>
+                    {% endif %}
+                    <br>
+                    <a href="{% url 'attendance_dashboard' %}" class="btn btn-primary btn-sm mt-2">
+                        View Attendance
+                    </a>
+                </div>
             </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-3 mb-2">
-                        <a href="#" class="btn btn-outline-primary w-100">Record Attendance</a>
+        </div>
+
+        <!-- Total Students -->
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Total Students</h5>
+                    <h3 class="text-info">{{ total_students }}</h3>
+                    <p class="text-muted">Registered students</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gender Distribution -->
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Gender Distribution</h5>
+                    <div class="row">
+                        <div class="col-6">
+                            <h6 class="text-primary">Boys</h6>
+                            <h4>{{ boys_count }}</h4>
+                        </div>
+                        <div class="col-6">
+                            <h6 class="text-pink">Girls</h6>
+                            <h4>{{ girls_count }}</h4>
+                        </div>
                     </div>
-                    <div class="col-md-3 mb-2">
-                        <a href="#" class="btn btn-outline-success w-100">View Reports</a>
+                    {% if total_students > 0 %}
+                    <div class="progress mt-2" style="height: 8px;">
+                        <div class="progress-bar bg-primary" 
+                             style="width: {% widthratio boys_count total_students 100 %}%">
+                        </div>
+                        <div class="progress-bar bg-pink" 
+                             style="width: {% widthratio girls_count total_students 100 %}%">
+                        </div>
                     </div>
-                    <div class="col-md-3 mb-2">
-                        <a href="/admin/" class="btn btn-outline-info w-100">Admin Panel</a>
-                    </div>
-                    <div class="col-md-3 mb-2">
-                        <a href="#" class="btn btn-outline-warning w-100">Student Progress</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <a href="{% url 'attendance_dashboard' %}" class="btn btn-outline-primary btn-block mb-2">
+                                <i class="fas fa-calendar-check"></i><br>
+                                Record Attendance
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="#" class="btn btn-outline-success btn-block mb-2">
+                                <i class="fas fa-chart-bar"></i><br>
+                                View Reports
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="/admin/" class="btn btn-outline-warning btn-block mb-2">
+                                <i class="fas fa-cog"></i><br>
+                                Admin Panel
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="#" class="btn btn-outline-info btn-block mb-2">
+                                <i class="fas fa-graduation-cap"></i><br>
+                                Student Progress
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -68,17 +122,21 @@
     </div>
 </div>
 
-<div class="row mt-4">
-    <div class="col-md-12">
-        <div class="card">
-            <div class="card-header">
-                <h5>Recent Activity</h5>
-            </div>
-            <div class="card-body">
-                <p class="text-muted">No recent activity yet. Start by adding attendance records or student data.</p>
-                <p>Use the <a href="/admin/">Admin Panel</a> to manage users, centers, and system settings.</p>
-            </div>
-        </div>
-    </div>
-</div>
+<style>
+.bg-pink {
+    background-color: #ff66b2 !important;
+}
+.text-pink {
+    color: #ff66b2 !important;
+}
+.btn-block {
+    padding: 15px 5px;
+    text-align: center;
+}
+.btn-block i {
+    font-size: 24px;
+    display: block;
+    margin-bottom: 5px;
+}
+</style>
 {% endblock %}

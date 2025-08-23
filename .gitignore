@@ -1,12 +1,19 @@
 # Django
 *.pyc
 __pycache__/
+*.pyo
+*.pyd
 db.sqlite3
 migrations/
 
 # Virtual environment
 venv/
+env/
+
+# Environment variables
 .env
+.env.local
+.env.prod
 
 # IDE
 .vscode/
@@ -23,5 +30,5 @@ Thumbs.db
 logs/
 
 # Temporary files
-tmp/
 temp/
+tmp/

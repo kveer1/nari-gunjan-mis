@@ -1,0 +1,11 @@
+<!-- templates/attendance/success.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="alert alert-success">
+    <h4>Attendance Marked Successfully!</h4>
+    <p>Your attendance records have been saved.</p>
+    <a href="{% url 'mark_attendance' %}" class="btn btn-primary">Mark More Attendance</a>
+    <a href="{% url 'dashboard' %}" class="btn btn-secondary">Return to Dashboard</a>
+</div>
+{% endblock %}

@@ -23,7 +23,13 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', dashboard, name='dashboard'),
     path('accounts/', include('django.contrib.auth.urls')),
+    path('accounts/', include('accounts.urls')),
     path('students/', include('students.urls')),
     path('attendance/', include('attendance.urls')),
     path('reports/', include('reports.urls')),
 ]
+from django.contrib import admin
+from django.urls import path, include
+from .views import dashboard
+from attendance import views as attendance_views
+

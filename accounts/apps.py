@@ -5,3 +5,7 @@ class AccountsConfig(AppConfig):
     name = 'accounts'
     verbose_name = 'Accounts Management'
     
+    def ready(self):
+        import accounts.signals
+
+        

@@ -43,6 +43,10 @@ INSTALLED_APPS = [
     'students.apps.StudentsConfig',
     'attendance.apps.AttendanceConfig',
     'reports.apps.ReportsConfig',
+
+     # Third party apps - ADD THESE
+    'crispy_forms',
+    'crispy_bootstrap5',
 ]
 
 MIDDLEWARE = [
@@ -148,3 +152,6 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+# Add these lines at the bottom of settings.py:
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+CRISPY_TEMPLATE_PACK = "bootstrap5"
