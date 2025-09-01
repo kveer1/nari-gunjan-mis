@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Attendance Reports</h2>
+    
+    <div class="row">
+        <!-- Quick Reports -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Quick Reports</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        <a href="{% url 'attendance_calendar' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-calendar"></i> Calendar View
+                        </a>
+                        <a href="{% url 'attendance_drilldown' 'year' current_year %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-chart-line"></i> Yearly Report
+                        </a>
+                        <a href="{% url 'attendance_drilldown' 'month' current_year current_month %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-chart-bar"></i> Monthly Report
+                        </a>
+                        <a href="{% url 'exception_reports' %}" class="list-group-item list-group-item-action text-danger">
+                            <i class="fas fa-exclamation-triangle"></i> Exception Reports
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Custom Date Range -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Custom Report</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" action="{% url 'attendance_drilldown' 'custom' 0 %}">
+                        <div class="row">
+                            <div class="col-md-5">
+                                <label class="form-label">Start Date</label>
+                                <input type="date" name="start_date" class="form-control" value="{{ default_start_date }}">
+                            </div>
+                            <div class="col-md-5">
+                                <label class="form-label">End Date</label>
+                                <input type="date" name="end_date" class="form-control" value="{{ default_end_date }}">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">&nbsp;</label>
+                                <button type="submit" class="btn btn-primary form-control">Generate</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Recent Statistics -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5>Recent Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            <h6>Last 7 Days</h6>
+                            <h3 class="text-primary">{{ last_7_days.attendance_rate|floatformat:1 }}%</h3>
+                            <small>{{ last_7_days.present }}/{{ last_7_days.total }} present</small>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <h6>Last 30 Days</h6>
+                            <h3 class="text-success">{{ last_30_days.attendance_rate|floatformat:1 }}%</h3>
+                            <small>{{ last_30_days.present }}/{{ last_30_days.total }} present</small>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <h6>This Month</h6>
+                            <h3 class="text-info">{{ this_month.attendance_rate|floatformat:1 }}%</h3>
+                            <small>{{ this_month.present }}/{{ this_month.total }} present</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Center-wise Performance -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5>Center Performance</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Center</th>
+                            <th>Students</th>
+                            <th>Last 7 Days</th>
+                            <th>Last 30 Days</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for center in centers %}
+                        <tr>
+                            <td>{{ center.name }}</td>
+                            <td>{{ center.student_set.count }}</td>
+                            <td>
+                                <div class="progress" style="height: 10px;">
+                                    <div class="progress-bar bg-{% if center.last_7_days > 90 %}success{% elif center.last_7_days > 75 %}warning{% else %}danger{% endif %}" 
+                                         style="width: {{ center.last_7_days }}%">
+                                    </div>
+                                </div>
+                                <small>{{ center.last_7_days|floatformat:1 }}%</small>
+                            </td>
+                            <td>
+                                <div class="progress" style="height: 10px;">
+                                    <div class="progress-bar bg-{% if center.last_30_days > 90 %}success{% elif center.last_30_days > 75 %}warning{% else %}danger{% endif %}" 
+                                         style="width: {{ center.last_30_days }}%">
+                                    </div>
+                                </div>
+                                <small>{{ center.last_30_days|floatformat:1 }}%</small>
+                            </td>
+                            <td>
+                                {% if center.last_7_days < 75 %}
+                                <span class="badge bg-danger">Needs Attention</span>
+                                {% elif center.last_7_days < 90 %}
+                                <span class="badge bg-warning">Monitor</span>
+                                {% else %}
+                                <span class="badge bg-success">Good</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
