@@ -2,10 +2,31 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="alert alert-success">
-    <h4>Attendance Marked Successfully!</h4>
-    <p>Your attendance records have been saved.</p>
-    <a href="{% url 'mark_attendance' %}" class="btn btn-primary">Mark More Attendance</a>
-    <a href="{% url 'dashboard' %}" class="btn btn-secondary">Return to Dashboard</a>
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card text-center">
+                <div class="card-body">
+                    <div class="text-success mb-3" style="font-size: 4rem;">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h3 class="card-title">Attendance Marked Successfully!</h3>
+                    <p class="card-text">Your attendance records have been saved to the database.</p>
+                    
+                    <div class="mt-4">
+                        <a href="{% url 'mark_student_attendance' %}" class="btn btn-primary">
+                            <i class="fas fa-user-graduate"></i> Mark Individual Attendance
+                        </a>
+                        <a href="{% url 'bulk_student_attendance' %}" class="btn btn-success">
+                            <i class="fas fa-users"></i> Mark Bulk Attendance
+                        </a>
+                        <a href="{% url 'attendance_dashboard' %}" class="btn btn-info">
+                            <i class="fas fa-chart-bar"></i> View Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

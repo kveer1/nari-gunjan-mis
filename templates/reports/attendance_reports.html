@@ -16,11 +16,18 @@
                         <a href="{% url 'attendance_calendar' %}" class="list-group-item list-group-item-action">
                             <i class="fas fa-calendar"></i> Calendar View
                         </a>
-                        <a href="{% url 'attendance_drilldown' 'year' current_year %}" class="list-group-item list-group-item-action">
-                            <i class="fas fa-chart-line"></i> Yearly Report
+                        <!-- Replace lines 19-24 with this simplified version -->
+                        <a href="{% url 'attendance_calendar' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-calendar"></i> Calendar View
                         </a>
-                        <a href="{% url 'attendance_drilldown' 'month' current_year current_month %}" class="list-group-item list-group-item-action">
-                            <i class="fas fa-chart-bar"></i> Monthly Report
+                        <a href="#" class="list-group-item list-group-item-action text-muted">
+                            <i class="fas fa-chart-line"></i> Yearly Report (Coming Soon)
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action text-muted">
+                            <i class="fas fa-chart-bar"></i> Monthly Report (Coming Soon)
+                        </a>
+                        <a href="{% url 'exception_reports' %}" class="list-group-item list-group-item-action text-danger">
+                            <i class="fas fa-exclamation-triangle"></i> Exception Reports
                         </a>
                         <a href="{% url 'exception_reports' %}" class="list-group-item list-group-item-action text-danger">
                             <i class="fas fa-exclamation-triangle"></i> Exception Reports

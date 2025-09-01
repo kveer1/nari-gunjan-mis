@@ -2,39 +2,44 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
+from django.db.models import Count, Q
 from .models import StudentAttendance, TeacherAttendance, CMAttendance
 from .forms import StudentAttendanceForm, TeacherAttendanceForm, CMAttendanceForm, BulkStudentAttendanceForm
 from students.models import Student, LearningCenter
 
-from django.contrib.auth.decorators import login_required, user_passes_test
-
-def is_teacher(user):
-    return hasattr(user, 'userprofile') and user.userprofile.role == 'teacher'
-
-def is_cm(user):
-    return hasattr(user, 'userprofile') and user.userprofile.role == 'cm'
-
-def is_admin(user):
-    return hasattr(user, 'userprofile') and user.userprofile.role == 'admin'
+@login_required
+def attendance_dashboard(request):
+    """Main attendance dashboard"""
+    today = timezone.now().date()
+    
+    # Basic statistics
+    student_attendance_today = StudentAttendance.objects.filter(date=today)
+    teacher_attendance_today = TeacherAttendance.objects.filter(date=today)
+    cm_attendance_today = CMAttendance.objects.filter(date=today)
+    
+    context = {
+        'student_attendance_count': student_attendance_today.count(),
+        'teacher_attendance_count': teacher_attendance_today.count(),
+        'cm_attendance_count': cm_attendance_today.count(),
+        'today': today,
+    }
+    
+    return render(request, 'attendance/dashboard.html', context)
 
 @login_required
-@user_passes_test(lambda user: is_teacher(user) or is_admin(user))
 def mark_student_attendance(request):
+    """Mark individual student attendance"""
     if request.method == 'POST':
         form = StudentAttendanceForm(request.POST)
         if form.is_valid():
-            try:
-                attendance = form.save(commit=False)
-                attendance.marked_by = request.user
-                attendance.save()
-                messages.success(request, f"Attendance marked for {attendance.student.name}")
-                return redirect('mark_student_attendance')
-            except Exception as e:
-                messages.error(request, f"Error saving attendance: {str(e)}")
+            attendance = form.save(commit=False)
+            attendance.marked_by = request.user
+            attendance.save()
+            messages.success(request, f"Attendance marked for {attendance.student.name}")
+            return redirect('mark_student_attendance')
     else:
         form = StudentAttendanceForm()
     
-    # Get recent attendance records
     recent_attendance = StudentAttendance.objects.all().order_by('-date')[:10]
     
     return render(request, 'attendance/mark_student.html', {
@@ -43,8 +48,8 @@ def mark_student_attendance(request):
     })
 
 @login_required
-@user_passes_test(lambda user: is_admin(user))
 def mark_teacher_attendance(request):
+    """Mark teacher attendance"""
     if request.method == 'POST':
         form = TeacherAttendanceForm(request.POST)
         if form.is_valid():
@@ -60,6 +65,7 @@ def mark_teacher_attendance(request):
 
 @login_required
 def mark_cm_attendance(request):
+    """Mark community mobilizer attendance"""
     if request.method == 'POST':
         form = CMAttendanceForm(request.POST)
         if form.is_valid():
@@ -75,6 +81,7 @@ def mark_cm_attendance(request):
 
 @login_required
 def bulk_student_attendance(request, center_id=None):
+    """Bulk student attendance marking"""
     center = None
     if center_id:
         center = get_object_or_404(LearningCenter, id=center_id)
@@ -121,25 +128,6 @@ def bulk_student_attendance(request, center_id=None):
     })
 
 @login_required
-def attendance_dashboard(request):
-    today = timezone.now().date()
-    
-    # Basic statistics
-    student_attendance_today = StudentAttendance.objects.filter(date=today)
-    teacher_attendance_today = TeacherAttendance.objects.filter(date=today)
-    cm_attendance_today = CMAttendance.objects.filter(date=today)
-    
-    # Monthly statistics
-    from datetime import timedelta
-    month_start = today.replace(day=1)
-    student_monthly = StudentAttendance.objects.filter(date__gte=month_start)
-    
-    context = {
-        'student_attendance_count': student_attendance_today.count(),
-        'teacher_attendance_count': teacher_attendance_today.count(),
-        'cm_attendance_count': cm_attendance_today.count(),
-        'monthly_count': student_monthly.count(),
-        'today': today,
-    }
-    
-    return render(request, 'attendance/dashboard.html', context)
+def attendance_success(request):
+    """Display success message after marking attendance"""
+    return render(request, 'attendance/success.html')

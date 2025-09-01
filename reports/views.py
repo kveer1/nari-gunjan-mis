@@ -11,7 +11,51 @@ from attendance.models import StudentAttendance
 @login_required
 def attendance_reports(request):
     """Main reports dashboard"""
-    return render(request, 'reports/attendance_reports.html')
+    today = timezone.now().date()
+    
+    # Get current year and month for the reports
+    current_year = today.year
+    current_month = today.month
+    
+    # Get recent statistics
+    last_7_days = StudentAttendance.get_attendance_stats(
+        today - timezone.timedelta(days=7), today
+    )
+    last_30_days = StudentAttendance.get_attendance_stats(
+        today - timezone.timedelta(days=30), today
+    )
+    
+    # Get this month's statistics
+    month_start = today.replace(day=1)
+    if today.month == 12:
+        month_end = today.replace(year=today.year + 1, month=1, day=1) - timezone.timedelta(days=1)
+    else:
+        month_end = today.replace(month=today.month + 1, day=1) - timezone.timedelta(days=1)
+    
+    this_month = StudentAttendance.get_attendance_stats(month_start, month_end)
+    
+    # Get center-wise performance
+    centers = LearningCenter.objects.all()
+    for center in centers:
+        center.last_7_days = StudentAttendance.get_attendance_stats(
+            today - timezone.timedelta(days=7), today, center
+        )['attendance_rate']
+        center.last_30_days = StudentAttendance.get_attendance_stats(
+            today - timezone.timedelta(days=30), today, center
+        )['attendance_rate']
+    
+    context = {
+        'current_year': current_year,
+        'current_month': current_month,
+        'last_7_days': last_7_days,
+        'last_30_days': last_30_days,
+        'this_month': this_month,
+        'centers': centers,
+        'default_start_date': (today - timezone.timedelta(days=30)).strftime('%Y-%m-%d'),
+        'default_end_date': today.strftime('%Y-%m-%d'),
+    }
+    
+    return render(request, 'reports/attendance_reports.html', context)
 
 @login_required
 def attendance_calendar_view(request):
