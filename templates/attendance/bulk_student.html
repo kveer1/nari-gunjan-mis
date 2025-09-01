@@ -1,23 +1,28 @@
 {% extends 'base.html' %}
-{% load crispy_forms_tags %}
+{% load static %}
 
 {% block content %}
 <div class="container mt-4">
     <div class="row">
         <div class="col-md-12">
             <div class="card">
-                <div class="card-header">
-                    <h4>Bulk Student Attendance</h4>
+                <div class="card-header bg-success text-white">
+                    <h4><i class="fas fa-users"></i> Bulk Student Attendance</h4>
                 </div>
                 <div class="card-body">
+                    <!-- Center Selection -->
                     {% if centers %}
-                    <div class="mb-3">
+                    <div class="mb-4">
                         <h5>Select Learning Center:</h5>
                         <div class="list-group">
                             {% for center in centers %}
                                 <a href="{% url 'bulk_student_attendance_center' center.id %}" 
                                    class="list-group-item list-group-item-action {% if selected_center.id == center.id %}active{% endif %}">
+                                    <i class="fas fa-school"></i>
                                     {{ center.name }} - {{ center.village }}
+                                    <span class="badge bg-primary float-end">
+                                        {{ center.student_set.count }} students
+                                    </span>
                                 </a>
                             {% endfor %}
                         </div>
@@ -26,19 +31,188 @@
 
                     {% if selected_center %}
                     <div class="alert alert-info">
+                        <i class="fas fa-school"></i>
                         Marking attendance for: <strong>{{ selected_center.name }}</strong>
+                        <span class="badge bg-secondary">{{ selected_center.student_set.count }} students</span>
                     </div>
                     {% endif %}
 
-                    <form method="post">
+                    <form method="post" id="bulkAttendanceForm">
                         {% csrf_token %}
-                        {{ form|crispy }}
-                        <button type="submit" class="btn btn-primary">Mark Attendance for Selected Students</button>
-                        <a href="{% url 'attendance_dashboard' %}" class="btn btn-secondary">Cancel</a>
+                        
+                        <!-- Date Selection -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label">Attendance Date</label>
+                                {{ form.date }}
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-end h-100">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="selectAll" checked>
+                                        <label class="form-check-label" for="selectAll">
+                                            <strong>Select All Students</strong>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Student List -->
+                        {% if form.students.field.queryset.exists %}
+                        <div class="card">
+                            <div class="card-header bg-light">
+                                <div class="row align-items-center">
+                                    <div class="col-md-6">
+                                        <h5 class="mb-0">
+                                            <i class="fas fa-user-graduate"></i>
+                                            Students ({{ form.students.field.queryset.count }})
+                                        </h5>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                            <input type="text" class="form-control" placeholder="Search students..." id="studentFilter">
+                                        </div>
+                                    </div>
+                                </div>
+                                <small class="text-muted">✓ Checked = Present | ✗ Unchecked = Absent</small>
+                            </div>
+                            <div class="card-body">
+                                <div class="row" id="studentsContainer">
+                                    {% for student in form.students.field.queryset %}
+                                    <div class="col-md-4 mb-3 student-item">
+                                        <div class="form-check">
+                                            <input class="form-check-input student-checkbox" 
+                                                   type="checkbox" 
+                                                   name="students" 
+                                                   value="{{ student.id }}" 
+                                                   id="student_{{ student.id }}"
+                                                   checked>
+                                            <label class="form-check-label w-100" for="student_{{ student.id }}">
+                                                <strong>{{ student.name }}</strong>
+                                                <br>
+                                                <small class="text-muted">
+                                                    Level: {{ student.current_level }} | 
+                                                    {% if student.enrolled_in_govt_school %}
+                                                    Govt. Class: {{ student.govt_school_class }}
+                                                    {% else %}
+                                                    Not in Govt. School
+                                                    {% endif %}
+                                                </small>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            No students found for the selected center.
+                        </div>
+                        {% endif %}
+
+                        <!-- Action Buttons -->
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-save"></i> Mark Attendance for 
+                                <span id="selectedCount">{{ form.students.field.queryset.count }}</span> Students
+                            </button>
+                            <a href="{% url 'attendance_dashboard' %}" class="btn btn-secondary ms-2">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                            
+                            <div class="mt-2">
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle"></i>
+                                    All students are selected by default. Uncheck absent students.
+                                </small>
+                            </div>
+                        </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- JavaScript for enhanced functionality -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const selectAllCheckbox = document.getElementById('selectAll');
+    const studentCheckboxes = document.querySelectorAll('.student-checkbox');
+    const selectedCount = document.getElementById('selectedCount');
+    const studentFilter = document.getElementById('studentFilter');
+    const studentItems = document.querySelectorAll('.student-item');
+    
+    // Select all functionality
+    selectAllCheckbox.addEventListener('change', function() {
+        studentCheckboxes.forEach(checkbox => {
+            checkbox.checked = this.checked;
+        });
+        updateSelectedCount();
+    });
+    
+    // Individual checkbox change
+    studentCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateSelectAllState);
+    });
+    
+    // Search functionality
+    studentFilter.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        studentItems.forEach(item => {
+            const studentName = item.querySelector('strong').textContent.toLowerCase();
+            item.style.display = studentName.includes(searchTerm) ? 'block' : 'none';
+        });
+    });
+    
+    // Update select all state
+    function updateSelectAllState() {
+        const allChecked = Array.from(studentCheckboxes).every(cb => cb.checked);
+        const noneChecked = Array.from(studentCheckboxes).every(cb => !cb.checked);
+        
+        selectAllCheckbox.checked = allChecked;
+        selectAllCheckbox.indeterminate = !allChecked && !noneChecked;
+        
+        updateSelectedCount();
+    }
+    
+    // Update selected count
+    function updateSelectedCount() {
+        const selected = Array.from(studentCheckboxes).filter(cb => cb.checked).length;
+        selectedCount.textContent = selected;
+        
+        // Update button text
+        const submitButton = document.querySelector('button[type="submit"]');
+        if (submitButton) {
+            submitButton.innerHTML = `<i class="fas fa-save"></i> Mark Attendance for ${selected} Students`;
+        }
+    }
+    
+    // Initialize
+    updateSelectedCount();
+});
+</script>
+
+<style>
+.student-item {
+    transition: all 0.2s ease;
+    padding: 8px;
+    border-radius: 5px;
+}
+.student-item:hover {
+    background-color: #f8f9fa;
+    transform: translateY(-2px);
+}
+.form-check-input:indeterminate {
+    background-color: #6c757d;
+    border-color: #6c757d;
+}
+#studentFilter {
+    max-width: 300px;
+}
+</style>
 {% endblock %}

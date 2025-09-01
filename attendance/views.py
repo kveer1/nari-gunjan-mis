@@ -93,19 +93,25 @@ def bulk_student_attendance(request, center_id=None):
                     date=date,
                     defaults={
                         'present': True,
-                        'marked_by': request.user
+                        'marked_by': request.user,
+                        'remarks': 'Bulk attendance marking'
                     }
                 )
                 if not created:
                     attendance.present = True
                     attendance.marked_by = request.user
+                    attendance.remarks = 'Updated via bulk marking'
                     attendance.save()
                 count += 1
             
-            messages.success(request, f"Attendance marked for {count} students")
+            messages.success(request, f"✅ Attendance marked for {count} students on {date}")
             return redirect('bulk_student_attendance')
     else:
-        form = BulkStudentAttendanceForm(center=center)
+        # Pre-select all students by default
+        initial = {'select_all': True}
+        if center:
+            initial['students'] = Student.objects.filter(center=center)
+        form = BulkStudentAttendanceForm(center=center, initial=initial)
     
     centers = LearningCenter.objects.all()
     return render(request, 'attendance/bulk_student.html', {

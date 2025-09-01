@@ -44,6 +44,7 @@ class CMAttendanceForm(forms.ModelForm):
             }),
         }
 
+
 class BulkStudentAttendanceForm(forms.Form):
     date = forms.DateField(
         widget=forms.DateInput(attrs={
@@ -52,6 +53,23 @@ class BulkStudentAttendanceForm(forms.Form):
             'value': timezone.now().date()
         })
     )
+    students = forms.ModelMultipleChoiceField(
+        queryset=Student.objects.all(),
+        widget=forms.CheckboxSelectMultiple,
+        required=False
+    )
+    select_all = forms.BooleanField(
+        required=False,
+        initial=True,
+        widget=forms.HiddenInput()
+    )
+    
+    def __init__(self, *args, **kwargs):
+        center = kwargs.pop('center', None)
+        super().__init__(*args, **kwargs)
+        if center:
+            self.fields['students'].queryset = Student.objects.filter(center=center)
+
     students = forms.ModelMultipleChoiceField(
         queryset=Student.objects.all(),
         widget=forms.CheckboxSelectMultiple,

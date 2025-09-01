@@ -9,4 +9,5 @@ urlpatterns = [
     path('cm/', views.mark_cm_attendance, name='mark_cm_attendance'),
     path('bulk/student/', views.bulk_student_attendance, name='bulk_student_attendance'),
     path('bulk/student/center/<int:center_id>/', views.bulk_student_attendance, name='bulk_student_attendance_center'),
+    path('success/', views.attendance_success, name='attendance_success'),
 ]
