@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Custom Attendance Report</h2>
+    <p class="text-muted">{{ start_date }} to {{ end_date }}</p>
+    
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i>
+        Custom reports are under development. Coming soon!
+    </div>
+    
+    <a href="{% url 'attendance_reports' %}" class="btn btn-primary">
+        <i class="fas fa-arrow-left"></i> Back to Reports
+    </a>
+</div>
+{% endblock %}

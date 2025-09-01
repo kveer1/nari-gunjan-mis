@@ -92,40 +92,53 @@ def attendance_calendar_view(request):
     return render(request, 'reports/attendance_calendar.html', context)
 
 @login_required
-def attendance_drilldown(request, period, year, month=None, week=None):
-    """Drill-down attendance reports"""
+def attendance_drilldown(request, period, year=None, month=None, week=None):
+    """Drill-down attendance reports - fixed to handle all parameters"""
     today = timezone.now().date()
     
-    if period == 'year':
-        # Yearly view -> show months
-        start_date = datetime(int(year), 1, 1).date()
-        end_date = datetime(int(year), 12, 31).date()
-        data = get_monthly_attendance(int(year))
-        template = 'reports/yearly_report.html'
+    try:
+        if period == 'year' and year:
+            # Yearly view -> show months
+            start_date = datetime(int(year), 1, 1).date()
+            end_date = datetime(int(year), 12, 31).date()
+            data = get_monthly_attendance(int(year))
+            template = 'reports/yearly_report.html'
+            
+        elif period == 'month' and year and month:
+            # Monthly view -> show weeks
+            start_date = datetime(int(year), int(month), 1).date()
+            if int(month) == 12:
+                end_date = datetime(int(year) + 1, 1, 1).date() - timedelta(days=1)
+            else:
+                end_date = datetime(int(year), int(month) + 1, 1).date() - timedelta(days=1)
+            data = get_weekly_attendance(int(year), int(month))
+            template = 'reports/monthly_report.html'
+            
+        elif period == 'week' and year and week:
+            # Weekly view -> show days
+            start_date = get_week_start_date(int(year), int(week))
+            end_date = start_date + timedelta(days=6)
+            data = get_daily_attendance(start_date, end_date)
+            template = 'reports/weekly_report.html'
         
-    elif period == 'month':
-        # Monthly view -> show weeks
-        start_date = datetime(int(year), int(month), 1).date()
-        if int(month) == 12:
-            end_date = datetime(int(year) + 1, 1, 1).date() - timedelta(days=1)
+        elif period == 'custom':
+            # Custom period
+            start_date = request.GET.get('start_date', today - timedelta(days=30))
+            end_date = request.GET.get('end_date', today)
+            if isinstance(start_date, str):
+                start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+            if isinstance(end_date, str):
+                end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+            data = get_daily_attendance(start_date, end_date)
+            template = 'reports/custom_report.html'
+        
         else:
-            end_date = datetime(int(year), int(month) + 1, 1).date() - timedelta(days=1)
-        data = get_weekly_attendance(int(year), int(month))
-        template = 'reports/monthly_report.html'
-        
-    elif period == 'week':
-        # Weekly view -> show days
-        start_date = get_week_start_date(int(year), int(week))
-        end_date = start_date + timedelta(days=6)
-        data = get_daily_attendance(start_date, end_date)
-        template = 'reports/weekly_report.html'
-    
-    else:
-        # Custom period
-        start_date = request.GET.get('start_date', today - timedelta(days=30))
-        end_date = request.GET.get('end_date', today)
-        data = get_daily_attendance(start_date, end_date)
-        template = 'reports/custom_report.html'
+            # Invalid parameters, redirect to main reports
+            return redirect('attendance_reports')
+            
+    except (ValueError, TypeError):
+        # Handle invalid parameters
+        return redirect('attendance_reports')
     
     context = {
         'period': period,
@@ -137,6 +150,7 @@ def attendance_drilldown(request, period, year, month=None, week=None):
         'attendance_data': data,
         'centers': LearningCenter.objects.all(),
     }
+    
     return render(request, template, context)
 
 @login_required

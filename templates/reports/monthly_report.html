@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Monthly Attendance Report - {{ year }}-{{ month }}</h2>
+    
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i>
+        Monthly reports are under development. Coming soon!
+    </div>
+    
+    <a href="{% url 'attendance_reports' %}" class="btn btn-primary">
+        <i class="fas fa-arrow-left"></i> Back to Reports
+    </a>
+</div>
+{% endblock %}
